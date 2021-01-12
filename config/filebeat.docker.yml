@@ -1,0 +1,54 @@
+---
+filebeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+      templates:
+        - condition:
+            contains:
+              docker.container.labels.nginx: "True"
+          config:
+            - module: nginx
+              access:
+                input:
+                  type: docker
+                  containers:
+                    ids: "${data.docker.container.id}"
+                    stream: "stdout"
+              error:
+                input:
+                  containers:
+                    ids: "${data.docker.container.id}"
+                    stream: "stderr"
+        - condition:
+            contains:
+              docker.container.labels.apache2: "True"
+          config:
+            - module: apache
+              access:
+                input:
+                  type: docker
+                  containers:
+                    ids: "${data.docker.container.id}"
+                    stream: "stdout"
+              error:
+                input:
+                  containers:
+                    ids: "${data.docker.container.id}"
+                    stream: "stderr"
+
+processors:
+- decode_json_fields:
+    when.or:
+      - contains:
+          docker.container.labels.json_logger: "True"
+      - contains:
+          docker.container.labels.json_logger: "true"
+    fields: ["message"]
+    target: "json"
+    overwrite_keys: true

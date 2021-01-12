@@ -1,0 +1,5 @@
+cluster.name: my-elasticsearch-cluster
+discovery.type: single-node
+#discovery.seed_hosts, discovery.seed_providers, cluster.initial_master_nodes
+network.host: 0.0.0.0
+xpack.security.enabled: false
